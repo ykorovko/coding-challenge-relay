@@ -5,7 +5,7 @@ import Typography from '@material-ui/core/Typography';
 
 function ProductCard({ product }: { product: $FlowFixMe }) {
   return (
-    <Card style={{ maxWidth: 400, margin: 20, flex: '1 1 30%' }}>
+    <Card>
       <CardContent>
         <Typography variant="h5" component="div">
           {product.name}

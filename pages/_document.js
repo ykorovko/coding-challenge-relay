@@ -1,16 +1,17 @@
-import React from 'react';
-import Document, {
-  Html, Head, Main, NextScript,
-} from 'next/document';
-import { ServerStyleSheets } from '@material-ui/styles';
-import theme from '../lib/theme';
+import React from "react";
+import Document, { Html, Head, Main, NextScript } from "next/document";
+import { ServerStyleSheets } from "@material-ui/styles";
+
+import theme from "../lib/theme";
 
 export default class MyDocument extends Document {
   static async getInitialProps(context) {
     const props = await super.getInitialProps(context);
+
     const {
       req: { locale, localeDataScript },
     } = context;
+
     return {
       ...props,
       locale,
@@ -20,13 +21,21 @@ export default class MyDocument extends Document {
 
   render() {
     const { localeDataScript, locale } = this.props;
+
     return (
       <Html lang={locale}>
         <Head>
           <link rel="preconnect" href="https://fonts.gstatic.com" />
-          <link href="https://fonts.googleapis.com/css?family=Montserrat:500,600,700&display=swap&subset=cyrillic,cyrillic-ext,latin-ext" rel="stylesheet" />
-          <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap&subset=cyrillic,cyrillic-ext,latin-ext" rel="stylesheet" />
+          <link
+            href="https://fonts.googleapis.com/css?family=Montserrat:500,600,700&display=swap&subset=cyrillic,cyrillic-ext,latin-ext"
+            rel="stylesheet"
+          />
+          <link
+            href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap&subset=cyrillic,cyrillic-ext,latin-ext"
+            rel="stylesheet"
+          />
         </Head>
+
         <body>
           <Main />
           {/* eslint-disable-next-line react/no-danger */}
@@ -65,9 +74,10 @@ MyDocument.getInitialProps = async (ctx) => {
   const sheets = new ServerStyleSheets();
   const originalRenderPage = ctx.renderPage;
 
-  ctx.renderPage = () => originalRenderPage({
-    enhanceApp: (App) => (props) => sheets.collect(<App {...props} />),
-  });
+  ctx.renderPage = () =>
+    originalRenderPage({
+      enhanceApp: (App) => (props) => sheets.collect(<App {...props} />),
+    });
 
   const initialProps = await Document.getInitialProps(ctx);
 

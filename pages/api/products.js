@@ -1,7 +1,7 @@
 // @flow
 import { faker } from '@faker-js/faker';
 
-type Product = {
+export type Product = {
   id: number,
   name: string,
   price: string,
@@ -21,6 +21,14 @@ export const products: Product[] = new Array(9).fill(1).map((_, i) => ({
 
 export const get = () => products;
 
-export const add = (product: Object) => {
-  products.push(product);
+export const add = (product: Product) => {
+  const newProduct = {
+    id: Date.now(),
+    createdAt: faker.date.past().toISOString(),
+    ...product,
+  };
+
+  products.push(newProduct);
+
+  return newProduct;
 };

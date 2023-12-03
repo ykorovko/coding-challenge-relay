@@ -21,11 +21,18 @@ const resolvers = {
   Query: {
     viewer: () => viewer,
   },
-}
+  Mutation: {
+    addProduct: (_, { data }) => {
+      console.log('[mutation]', data);
+
+      return products.add(data);
+    },
+  },
+};
 
 const schema = makeExecutableSchema({ typeDefs: schemaString, resolvers });
 
-const handler =  (req: NextApiRequest, res: NextApiResponse<any>) => {
+const handler = (req: NextApiRequest, res: NextApiResponse<any>) => {
   return graphqlHTTP({
     schema,
     graphiql: true,

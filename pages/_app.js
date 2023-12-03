@@ -1,15 +1,23 @@
 // @flow
 import React, { Suspense } from 'react';
 import App from 'next/app';
-import Head from 'next/head';
-import { QueryRenderer } from 'react-relay';
 import ThemeProvider from '@material-ui/styles/ThemeProvider';
 import CssBaseline from '@material-ui/core/CssBaseline';
+import Head from 'next/head';
+import {
+  RelayEnvironmentProvider,
+  QueryRenderer,
+  useRelayEnvironment,
+} from 'react-relay';
 import { createIntl, createIntlCache, RawIntlProvider } from 'react-intl';
-import type { NextComponentType, NextPageContext } from 'next/next-server/lib/utils';
+import type {
+  NextComponentType,
+  NextPageContext,
+} from 'next/next-server/lib/utils';
 
 import theme from '../lib/theme';
-import { initEnvironment, createEnvironment } from '../lib/createEnvironment';
+// import { initEnvironment, createEnvironment } from "../lib/createEnvironment";
+import { createRelayEnvironment } from '../lib/createRelayEnvironment';
 import MainContainer from '../components/MainContainer';
 
 if (!Intl.PluralRules) {
@@ -27,7 +35,7 @@ type InitialProps = {
   Component: NextComponentType<NextPageContext, $FlowFixMe, $FlowFixMe>,
   pageProps: $FlowFixMe,
   locale: string,
-  messages: { [key: string]: string; },
+  messages: { [key: string]: string },
   relayData: $FlowFixMe,
   token: string,
   records: $FlowFixMe,
@@ -41,6 +49,7 @@ type Props = {
 export default class MyApp extends App<InitialProps> {
   static async getInitialProps({ Component, ctx }: Props): $FlowFixMe {
     let pageProps = {};
+
     if (Component.getInitialProps) {
       pageProps = await Component.getInitialProps(ctx);
     }
@@ -80,6 +89,7 @@ export default class MyApp extends App<InitialProps> {
       token,
       records,
     } = this.props;
+
     const intl = createIntl(
       {
         locale,
@@ -88,51 +98,52 @@ export default class MyApp extends App<InitialProps> {
       cache,
     );
 
-    if (!Component.query) {
-      return <Component {...pageProps} locale={locale} />
-    }
-
-    const environment = createEnvironment(
-      {
-        relayData,
-        records,
-      },
-    );
+    const relayEnvironment = createRelayEnvironment(pageProps);
 
     return (
       <RawIntlProvider value={intl}>
-        <Head>
-          <meta charSet="utf-8" />
-          <title>Products</title>
-          <meta
-            name="viewport"
-            content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no"
-          />
-        </Head>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <QueryRenderer
-            environment={environment}
-            query={Component.query}
-            variables={pageProps.variables}
-            render={(params) => {
-              const { error, props } = params;
-              if (props && props.viewer) {
+        <RelayEnvironmentProvider environment={relayEnvironment}>
+          <Head>
+            <meta charSet="utf-8" />
+            <title>Products</title>
+            <meta
+              name="viewport"
+              content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no"
+            />
+          </Head>
 
-                return (
-                  <Suspense fallback={null}>
-                    <Component {...pageProps} environment={environment} {...props} locale={locale} />
-                  </Suspense>
-                );
-              }
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
 
-              if (error) {
-                return "Error!";
-              }
-              return "Loading...";
-            }}
-          />
-        </ThemeProvider>
+            <MainContainer>
+              {!Component.query ? (
+                <Component {...pageProps} locale={locale} />
+              ) : (
+                <QueryRenderer
+                  environment={relayEnvironment}
+                  query={Component.query}
+                  variables={pageProps.variables}
+                  render={({ props, error }) => {
+                    if (error) {
+                      return <div>{error.message}</div>;
+                    } else if (props) {
+                      return (
+                        <Component
+                          {...pageProps}
+                          {...props}
+                          environment={relayEnvironment}
+                          locale={locale}
+                        />
+                      );
+                    }
+
+                    return Component.loading || <div />;
+                  }}
+                />
+              )}
+            </MainContainer>
+          </ThemeProvider>
+        </RelayEnvironmentProvider>
       </RawIntlProvider>
     );
   }

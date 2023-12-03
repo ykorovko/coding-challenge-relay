@@ -1,28 +1,35 @@
 // @flow
-import React, { Component } from 'react';
-import { graphql } from 'react-relay';
-import type { pages_indexQueryResponse } from '../__generated__/pages_indexQuery.graphql';
+import { Component } from 'react';
+import { fetchQuery, graphql, useLazyLoadQuery } from 'react-relay';
+import Card from '@material-ui/core/Card';
+import Box from '@material-ui/core/Box';
+import Typography from '@material-ui/core/Typography';
+import { Grid } from '@material-ui/core';
+import Skeleton from '@material-ui/lab/Skeleton';
 
-import Card from "@material-ui/core/Card";
-import Box from "@material-ui/core/Box";
-import Typography from "@material-ui/core/Typography";
-import ProductCard from "../components/ProductCard";
+import type { pages_indexQueryResponse } from '../__generated__/pages_indexQuery.graphql';
+import ProductCard from '../components/ProductCard';
 
 type Props = {
-  ...pages_indexQueryResponse;
+  ...pages_indexQueryResponse,
 };
 
 function Index(props: Props) {
   return (
     <Box>
-      <Box display="flex" alignItems="center" justifyContent="center" m={4}>
-        <Typography variant="h1">Products</Typography>
+      <Box m={4}>
+        <Typography style={{ textAlign: 'center' }} variant="h1">
+          Products
+        </Typography>
       </Box>
-      <Box display="flex" flexWrap="wrap">
-        {props.viewer.products.map(product => (
-          <ProductCard key={product.id} product={product} />
+
+      <Grid container spacing={3}>
+        {props.viewer.products.map((one) => (
+          <Grid key={one.id} item xs={12} sm={6} md={4} lg={3}>
+            <ProductCard product={one} />
+          </Grid>
         ))}
-      </Box>
+      </Grid>
     </Box>
   );
 }
@@ -40,5 +47,21 @@ Index.query = graphql`
     }
   }
 `;
+
+Index.loading = (
+  <Box>
+    <div style={{ textAlign: 'center', margin: 32 }}>
+      <Typography variant="h1">Products</Typography>
+    </div>
+
+    <Grid container spacing={3}>
+      {Array.from(Array(9).keys()).map((i) => (
+        <Grid key={i} item xs={12} sm={6} md={4} lg={3}>
+          <Skeleton key={i} style={{ height: 160 }} variant="rect" />
+        </Grid>
+      ))}
+    </Grid>
+  </Box>
+);
 
 export default Index;
